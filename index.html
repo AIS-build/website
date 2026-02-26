@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIS — Artificial Intelligence Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#02040a;
+  --deep:#050b14;
+  --panel:#091422;
+  --border:rgba(0,210,255,0.12);
+  --cyan:#00d4ff;
+  --cyan2:#0099cc;
+  --glow:rgba(0,212,255,0.3);
+  --white:#f0f8ff;
+  --text:#c8e8f8;
+  --muted:#7aadca;
+  --red:#ff2050;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;overflow-x:hidden;}
+
+/* ANIMATED GRID */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:60px 60px;pointer-events:none;z-index:0;
+  animation:gridShift 20s linear infinite;
+}
+@keyframes gridShift{
+  0%{background-position:0 0;}
+  100%{background-position:60px 60px;}
+}
+
+/* SCAN LINE */
+body::after{
+  content:'';position:fixed;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  z-index:9999;animation:scanH 4s ease-in-out infinite;pointer-events:none;opacity:.4;
+}
+@keyframes scanH{0%,100%{top:0;opacity:0;}10%{opacity:.5;}90%{opacity:.3;}to{top:100vh;}}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 52px;
+  background:rgba(2,4,10,0.88);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:7px;color:var(--white);text-decoration:none;position:relative;}
+.logo em{color:var(--cyan);font-style:normal;}
+.logo::after{content:'';position:absolute;bottom:-4px;left:0;width:100%;height:1px;background:linear-gradient(90deg,var(--cyan),transparent);}
+.nav-l{display:flex;gap:32px;list-style:none;}
+.nav-l a{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:all .2s;position:relative;}
+.nav-l a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--cyan);transition:width .25s;}
+.nav-l a:hover{color:var(--white);}
+.nav-l a:hover::after{width:100%;}
+.nav-btns{display:flex;gap:10px;}
+.nbtn{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;border:none;padding:9px 20px;cursor:pointer;text-decoration:none;transition:all .25s;}
+.nbtn-outline{color:var(--cyan);background:transparent;border:1px solid rgba(0,212,255,0.35);}
+.nbtn-outline:hover{background:rgba(0,212,255,0.1);border-color:var(--cyan);}
+.nbtn-fill{color:var(--bg);background:var(--cyan);clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);font-weight:700;}
+.nbtn-fill:hover{background:var(--white);box-shadow:0 0 24px var(--glow);}
+
+/* HERO */
+#hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 52px 80px;overflow:hidden;z-index:1;
+}
+/* Animated orbs */
+.orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);}
+.orb1{width:700px;height:700px;background:rgba(0,180,255,0.07);top:-200px;right:-150px;animation:orbFloat 8s ease-in-out infinite;}
+.orb2{width:400px;height:400px;background:rgba(255,32,80,0.05);bottom:-100px;left:-50px;animation:orbFloat 10s ease-in-out infinite reverse;}
+@keyframes orbFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-30px);}}
+
+/* HERO LINES DECORATION */
+.hero-lines{position:absolute;right:0;top:0;bottom:0;width:40%;opacity:.06;pointer-events:none;}
+.hero-lines svg{width:100%;height:100%;}
+
+.htag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--cyan);margin-bottom:20px;opacity:0;animation:fadeUp .7s .3s forwards;}
+.htag::before{content:'▶ ';}
+.hh1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(70px,10.5vw,165px);
+  line-height:.87;max-width:1000px;
+  opacity:0;animation:fadeUp .85s .5s forwards;
+}
+.hh1 .c{color:var(--cyan);}
+.hh1 .o{-webkit-text-stroke:1px rgba(200,232,248,0.2);color:transparent;}
+.hrow{display:flex;align-items:flex-end;justify-content:space-between;margin-top:44px;gap:32px;flex-wrap:wrap;opacity:0;animation:fadeUp .8s .8s forwards;}
+.hsub{max-width:440px;font-size:15px;line-height:1.8;color:var(--text);}
+.hsub strong{color:var(--white);}
+.hact{display:flex;gap:10px;flex-shrink:0;}
+.bp{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--bg);background:var(--cyan);border:none;padding:13px 30px;cursor:pointer;text-decoration:none;display:inline-block;transition:all .25s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);font-weight:700;}
+.bp:hover{background:var(--white);box-shadow:0 0 32px var(--glow);transform:translateY(-2px);}
+.bs{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);background:transparent;border:1px solid rgba(0,212,255,0.3);padding:13px 30px;cursor:pointer;text-decoration:none;display:inline-block;transition:all .25s;}
+.bs:hover{border-color:var(--cyan);background:rgba(0,212,255,0.08);}
+.hscroll{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;animation:fadeIn 1s 1.5s forwards;}
+.hscroll span{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.sline{width:1px;height:36px;background:linear-gradient(to bottom,var(--cyan),transparent);animation:spulse 2s infinite;}
+
+/* TICKER */
+.ticker{background:var(--cyan);padding:9px 0;overflow:hidden;position:relative;z-index:1;}
+.ttrack{display:flex;white-space:nowrap;animation:tickA 24s linear infinite;}
+.ti{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--bg);padding:0 28px;font-weight:700;}
+
+/* LAYOUT */
+.s{position:relative;z-index:1;}
+.w{max-width:1140px;margin:0 auto;padding:0 52px;}
+.ey{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;opacity:.8;}
+.h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,5vw,80px);line-height:.92;}
+.h2 .c{color:var(--cyan);}
+.h2 .o{-webkit-text-stroke:1px rgba(200,232,248,0.18);color:transparent;}
+.bt{font-size:15px;line-height:1.8;color:var(--text);}
+.bt strong{color:var(--white);}
+
+/* ── ABOUT — diagonal split ── */
+#about{padding:100px 0;background:var(--deep);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+#about::before{content:'';position:absolute;top:0;left:60%;width:1px;height:100%;background:var(--border);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.about-l{padding:0 52px 0 52px;}
+.about-r{padding:0 52px;}
+.about-l p{margin-top:20px;max-width:460px;}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:28px;}
+.pill{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--border);padding:6px 14px;color:var(--muted);}
+/* Services as inline items */
+.svc-list{display:flex;flex-direction:column;gap:0;}
+.svc{border-bottom:1px solid var(--border);padding:20px 0;display:flex;align-items:flex-start;gap:16px;transition:all .25s;cursor:default;}
+.svc:hover{padding-left:8px;}
+.svc:hover .svc-n{color:var(--cyan);}
+.svc-n{font-family:'Bebas Neue',sans-serif;font-size:24px;color:rgba(0,212,255,.2);flex-shrink:0;width:32px;transition:color .25s;}
+.svc-t{font-weight:800;font-size:14px;margin-bottom:4px;color:var(--white);}
+.svc-d{font-size:12px;line-height:1.6;color:var(--text);}
+
+/* ── P90 — full bleed with counter ── */
+#p90{padding:100px 0;position:relative;overflow:hidden;}
+.p90-bg-num{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:500px;line-height:1;color:rgba(0,212,255,.02);right:-60px;top:50%;transform:translateY(-50%);pointer-events:none;user-select:none;}
+.p90-grid{display:grid;grid-template-columns:1fr 360px;gap:70px;align-items:start;}
+.p90-l .h2{margin-bottom:26px;}
+.p90-pts{list-style:none;display:flex;flex-direction:column;gap:12px;margin:26px 0 36px;}
+.p90-pts li{display:flex;gap:10px;font-size:14px;line-height:1.6;color:var(--text);}
+.p90-pts li::before{content:'→';color:var(--cyan);flex-shrink:0;font-family:'JetBrains Mono',monospace;}
+.p90-pts li strong{color:var(--white);}
+.p90-r{position:sticky;top:100px;}
+.sbox{background:var(--panel);border:1px solid var(--border);padding:36px;text-align:center;position:relative;margin-bottom:14px;overflow:hidden;}
+.sbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);animation:scanBorder 2s infinite;}
+@keyframes scanBorder{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+.snum{font-family:'Bebas Neue',sans-serif;font-size:100px;color:var(--red);line-height:1;text-shadow:0 0 40px rgba(255,32,80,.3);}
+.slbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.ssub{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--red);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite;}
+.cta-panel{background:var(--panel);border:1px solid var(--border);padding:28px;}
+.cta-panel-t{font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:6px;color:var(--white);}
+.cta-panel-s{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:20px;}
+.cta-pts{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:22px;}
+.cta-pts li{font-size:12px;color:var(--text);display:flex;gap:8px;align-items:flex-start;}
+.cta-pts li::before{content:'◆';color:var(--cyan);font-size:7px;flex-shrink:0;margin-top:4px;}
+.cta-pts li strong{color:var(--white);}
+
+/* ── VISION — cinematic ── */
+#vision{
+  padding:100px 0;
+  background:var(--deep);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  text-align:center;position:relative;overflow:hidden;
+}
+.v-orb{position:absolute;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.055) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;animation:orbPulse 6s ease-in-out infinite;}
+@keyframes orbPulse{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.05);}}
+.vin{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:0 52px;}
+.vh{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,7.5vw,120px);line-height:.88;margin-bottom:36px;}
+.vh .c{color:var(--cyan);}
+.vh .o{-webkit-text-stroke:1px rgba(200,232,248,0.16);color:transparent;}
+.vb{font-size:16px;line-height:1.85;color:var(--text);margin-bottom:16px;}
+.vb strong{color:var(--white);}
+/* Platform layers — horizontal timeline feel */
+.layers{display:flex;flex-direction:column;gap:8px;margin-top:50px;text-align:left;}
+.layer-row{display:flex;align-items:center;gap:0;position:relative;}
+.layer{flex:1;display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--border);background:rgba(0,0,0,.2);transition:all .3s;position:relative;overflow:hidden;}
+.layer::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(0,212,255,.06);transition:width .4s;}
+.layer:hover::before{width:100%;}
+.layer:hover{border-color:rgba(0,212,255,.3);}
+.ln{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cyan);width:36px;flex-shrink:0;}
+.lname{font-weight:700;font-size:13px;margin-bottom:2px;color:var(--white);}
+.ldesc{font-size:11px;color:var(--text);}
+.lst{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;padding:3px 8px;flex-shrink:0;}
+.live{color:#00ff88;border:1px solid rgba(0,255,136,.3);}
+.build{color:var(--cyan);border:1px solid var(--border);}
+.res{color:var(--muted);border:1px solid rgba(200,232,248,.1);}
+
+/* ── CAREERS — tab UI ── */
+#careers{padding:100px 0;}
+.career-header{margin-bottom:36px;}
+.career-header p{margin-top:16px;max-width:500px;}
+.rtabs{display:flex;gap:2px;margin-bottom:36px;border-bottom:1px solid var(--border);background:var(--deep);}
+.rtab{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 24px;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.rtab.on{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(0,212,255,.04);}
+.rtab:hover:not(.on){color:var(--white);}
+.rpanel{display:none;}
+.rpanel.on{display:block;animation:fadeIn .25s forwards;}
+.rhead{display:flex;align-items:flex-start;justify-content:space-between;gap:40px;margin-bottom:32px;flex-wrap:wrap;}
+.rbig{font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:.92;margin-bottom:12px;color:var(--white);}
+.rp{font-size:14px;line-height:1.75;color:var(--text);max-width:540px;}
+.rp strong{color:var(--white);}
+.rbadge{background:var(--panel);border:1px solid var(--border);padding:20px 24px;text-align:center;min-width:150px;flex-shrink:0;}
+.rbadge-l{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.rbadge-v{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--cyan);}
+/* Requirements as flowing grid */
+.reqs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:30px;}
+.req{padding:16px;border-left:2px solid rgba(0,212,255,.3);background:rgba(9,20,34,.6);transition:border-color .2s;}
+.req:hover{border-left-color:var(--cyan);}
+.req-t{font-weight:700;font-size:13px;margin-bottom:4px;color:var(--white);}
+.req-d{font-size:12px;color:var(--text);line-height:1.55;}
+/* Process — horizontal flow */
+.pbox{background:var(--panel);border:1px solid var(--border);padding:32px;margin-bottom:20px;}
+.pbox-t{font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:22px;color:var(--white);}
+.psteps{display:flex;gap:0;position:relative;}
+.psteps::before{content:'';position:absolute;top:19px;left:0;right:0;height:1px;background:var(--border);}
+.pstep{flex:1;text-align:center;position:relative;padding-top:46px;}
+.psn{position:absolute;top:0;left:50%;transform:translateX(-50%);width:38px;height:38px;background:var(--panel);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--cyan);z-index:1;}
+.pst{font-weight:700;font-size:11px;margin-bottom:4px;color:var(--white);}
+.psd{font-size:10px;color:var(--text);line-height:1.5;padding:0 8px;}
+.cnote{background:rgba(255,32,80,.04);border:1px solid rgba(255,32,80,.18);padding:14px;font-size:11px;line-height:1.6;color:var(--text);}
+.cnote strong{color:var(--red);}
+
+/* ── BENEFITS — compact flow ── */
+#benefits{padding:100px 0;background:var(--deep);border-top:1px solid var(--border);}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:44px;}
+.bc{background:var(--panel);border:1px solid var(--border);padding:24px;transition:all .3s;position:relative;overflow:hidden;}
+.bc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--cyan);transform:scaleX(0);transition:transform .3s;}
+.bc:hover::after{transform:scaleX(1);}
+.bc:hover{border-color:rgba(0,212,255,.2);}
+.bc-ico{font-size:20px;margin-bottom:10px;}
+.bc-t{font-weight:800;font-size:13px;margin-bottom:5px;color:var(--white);}
+.bc-d{font-size:11px;line-height:1.55;color:var(--text);}
+
+/* ── FINAL CTA ── */
+#fcta{padding:130px 52px;text-align:center;position:relative;overflow:hidden;}
+#fcta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,212,255,.06) 0%,transparent 65%);}
+.fh{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8vw,115px);line-height:.88;position:relative;margin-bottom:22px;}
+.fh .c{color:var(--cyan);}
+.fs{font-size:14px;color:var(--text);margin-bottom:40px;position:relative;}
+.fb{display:flex;gap:12px;justify-content:center;position:relative;flex-wrap:wrap;}
+
+/* FOOTER */
+footer{background:var(--deep);border-top:1px solid var(--border);padding:56px 52px 30px;position:relative;z-index:1;}
+.ft{display:grid;grid-template-columns:2fr 1fr 1fr;gap:50px;margin-bottom:44px;}
+.flogo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:6px;margin-bottom:12px;}
+.flogo em{color:var(--cyan);font-style:normal;}
+.ftag{font-size:12px;line-height:1.7;color:var(--muted);max-width:260px;}
+.fct{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;}
+.fl{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.fl a{font-size:12px;color:var(--muted);text-decoration:none;transition:color .2s;}
+.fl a:hover{color:var(--white);}
+.fbot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.fleg{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:rgba(200,232,248,.2);}
+.fco{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(0,212,255,.3);}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes tickA{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+@keyframes spulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+/* Scroll-triggered reveal */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
+.reveal.on{opacity:1;transform:translateY(0);}
+.reveal-l{opacity:0;transform:translateX(-24px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
+.reveal-l.on{opacity:1;transform:translateX(0);}
+.reveal-r{opacity:0;transform:translateX(24px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
+.reveal-r.on{opacity:1;transform:translateX(0);}
+/* Stagger delays */
+.d1{transition-delay:.1s;}
+.d2{transition-delay:.2s;}
+.d3{transition-delay:.3s;}
+.d4{transition-delay:.4s;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:14px 20px;}
+  .nav-l{display:none;}
+  .w,.vin{padding:0 20px;}
+  #hero,#fcta{padding-left:20px;padding-right:20px;}
+  .about-grid,.p90-grid{grid-template-columns:1fr;}
+  #about::before{display:none;}
+  .about-l,.about-r{padding:0;}
+  .bgrid,.reqs{grid-template-columns:1fr 1fr;}
+  .ft{grid-template-columns:1fr 1fr;gap:30px;}
+  footer{padding:40px 20px 24px;}
+  .rhead{flex-direction:column;}
+  .psteps{flex-direction:column;gap:16px;}
+  .psteps::before{display:none;}
+  .pstep{padding-top:0;padding-left:50px;text-align:left;}
+  .psn{top:0;left:0;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">A<em>I</em>S</a>
+  <ul class="nav-l">
+    <li><a href="#about">Chi Siamo</a></li>
+    <li><a href="#p90">Progetto 90%</a></li>
+    <li><a href="#vision">Vision</a></li>
+    <li><a href="#careers">Careers</a></li>
+  </ul>
+  <div class="nav-btns">
+    <a href="https://ais-build.github.io/candidatura/" target="_blank" class="nbtn nbtn-outline">Candidati per una Call</a>
+    <a href="#careers" class="nbtn nbtn-fill" onclick="event.preventDefault();document.getElementById('careers').scrollIntoView({behavior:'smooth'})">Lavora con Noi</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero" class="s">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="hero-lines">
+    <svg viewBox="0 0 400 800" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="0" x2="400" y2="800" stroke="#00d4ff" stroke-width=".5"/>
+      <line x1="80" y1="0" x2="480" y2="800" stroke="#00d4ff" stroke-width=".5"/>
+      <line x1="160" y1="0" x2="560" y2="800" stroke="#00d4ff" stroke-width=".5"/>
+      <line x1="240" y1="0" x2="640" y2="800" stroke="#00d4ff" stroke-width=".5"/>
+    </svg>
+  </div>
+  <div class="htag">Milano · Chicago · Wyoming — Fondati per ridefinire tutto</div>
+  <h1 class="hh1">
+    Non vendiamo<br>
+    <span class="c">intelligenza</span><br>
+    <span class="o">artificiale.</span><br>
+    La costruiamo<br>
+    per te.
+  </h1>
+  <div class="hrow">
+    <p class="hsub">Non offriamo sistemi preconfezionati. Costruiamo <strong>agenti, automazioni e infrastrutture AI su misura</strong> che riducono costi fino al 90% e fanno crescere il tuo margine.</p>
+    <div class="hact">
+      <a href="#p90" class="bp">Progetto 90%</a>
+      <a href="#careers" class="bs">Lavora con Noi</a>
+    </div>
+  </div>
+  <div class="hscroll"><span>Scroll</span><div class="sline"></div></div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ttrack">
+    <span class="ti">Agenti AI su misura ◆</span><span class="ti">Automazioni end-to-end ◆</span><span class="ti">Food · Immobiliare · Export · Estetica ◆</span><span class="ti">Milano → Chicago → Wyoming ◆</span><span class="ti">Costi -90% ◆</span><span class="ti">Piattaforma agentica in arrivo ◆</span>
+    <span class="ti">Agenti AI su misura ◆</span><span class="ti">Automazioni end-to-end ◆</span><span class="ti">Food · Immobiliare · Export · Estetica ◆</span><span class="ti">Milano → Chicago → Wyoming ◆</span><span class="ti">Costi -90% ◆</span><span class="ti">Piattaforma agentica in arrivo ◆</span>
+  </div>
+</div>
+
+<!-- CHI SIAMO + COSA FACCIAMO -->
+<section id="about" class="s">
+  <div class="w" style="padding-top:100px;padding-bottom:100px;">
+    <div class="about-grid">
+      <div class="about-l reveal-l">
+        <div class="ey">// Chi Siamo & Cosa Facciamo</div>
+        <h2 class="h2">Nati da<br><span class="c">contratti</span><br><span class="o">reali.</span></h2>
+        <p class="bt" style="margin-top:20px;">AIS non è nata da un'idea su carta. È nata perché avevamo già <strong>clienti, contratti firmati e grandi aziende</strong> che chiedevano qualcosa che il mercato non sapeva dare.</p>
+        <p class="bt" style="margin-top:12px;">Come parlare con un LLM avanzato — <strong>non ottieni risposte standardizzate, ottieni esattamente quello di cui hai bisogno.</strong></p>
+        <div class="pills">
+          <span class="pill">Fondati: Milano</span><span class="pill">Sede: Wyoming, USA</span><span class="pill">Uffici: Navigli, Milano</span><span class="pill">Operativi: Chicago & Milano</span>
+        </div>
+      </div>
+      <div class="about-r reveal-r">
+        <div class="svc-list">
+          <div class="svc d1"><div class="svc-n">01</div><div><div class="svc-t">Agenti AI su Misura</div><div class="svc-d">Architetture agentiche progettate attorno ai tuoi flussi reali. Niente template.</div></div></div>
+          <div class="svc d2"><div class="svc-n">02</div><div><div class="svc-t">Automazioni End-to-End</div><div class="svc-d">Eliminiamo i colli di bottiglia. Dall'onboarding ai report — automatizzati.</div></div></div>
+          <div class="svc d3"><div class="svc-n">03</div><div><div class="svc-t">Strategia AI su Obiettivo</div><div class="svc-d">Iniziamo dai tuoi obiettivi. Poi costruiamo la tecnologia che ti porta lì.</div></div></div>
+          <div class="svc d4"><div class="svc-n">04</div><div><div class="svc-t">Scale Internazionale</div><div class="svc-d">Sistemi AI per l'espansione USA — distribuzione, multilingua, automazione.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGETTO 90% -->
+<section id="p90" class="s">
+  <div class="w" style="padding-top:100px;padding-bottom:100px;">
+    <div class="p90-bg-num">90</div>
+    <div class="p90-grid">
+      <div class="p90-l reveal-l">
+        <div class="ey">// Offerta Esclusiva</div>
+        <h2 class="h2">Progetto<br><span class="c">90%</span>.</h2>
+        <p class="bt" style="margin-top:22px;margin-bottom:14px;">Offriamo a <strong>sole 10 aziende selezionate al mese</strong> l'opportunità di implementare sistemi AI avanzati mentre la concorrenza ancora ci pensa.</p>
+        <p class="bt">Un <strong>obiettivo concreto e misurabile</strong>: ridurre costi operativi fino al 90% sostituendo il lavoro umano ripetitivo con agenti AI che non si ammalano, non vanno in ferie, non sbagliano.</p>
+        <ul class="p90-pts">
+          <li><strong>Risparmio fino al 90%</strong> sui costi operativi</li>
+          <li><strong>Aumento del fatturato</strong> con agenti H24 su vendita e follow-up</li>
+          <li><strong>Vantaggio competitivo immediato</strong></li>
+          <li><strong>Accesso prioritario</strong> alla piattaforma AIS</li>
+        </ul>
+        <a href="https://ais-build.github.io/candidatura/" target="_blank" class="bp">Candidati come Azienda →</a>
+      </div>
+      <div class="p90-r reveal-r">
+        <div class="sbox">
+          <div class="snum" id="slotNum">10</div>
+          <div class="slbl">SLOT DISPONIBILI AL MESE</div>
+          <div class="ssub"><span class="dot"></span>SELEZIONE APERTA</div>
+        </div>
+        <div class="cta-panel">
+          <div class="cta-panel-t">SEI PRONTO?</div>
+          <div class="cta-panel-s">// risposta garantita in 24 ore</div>
+          <ul class="cta-pts">
+            <li>Rispondi a <strong>3 domande di qualificazione</strong></li>
+            <li>Ricevi una <strong>valutazione gratuita</strong> del tuo caso</li>
+            <li>Se sei in linea, partiamo in <strong>30 giorni</strong></li>
+          </ul>
+          <a href="https://ais-build.github.io/candidatura/" target="_blank" class="bp" style="width:100%;text-align:center;display:block;clip-path:none;">INIZIA ORA →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISION -->
+<section id="vision" class="s">
+  <div class="v-orb"></div>
+  <div class="vin" style="padding-top:100px;padding-bottom:100px;">
+    <div class="reveal">
+      <div class="ey" style="text-align:center">// La Grande Visione</div>
+      <h2 class="vh">Stiamo<br><span class="c">costruendo</span><br><span class="o">il futuro</span><br>delle aziende.</h2>
+    </div>
+    <p class="vb reveal d1">Tra 12 mesi lanceremo qualcosa che non esiste ancora: <strong>una piattaforma agentica</strong> capace di lanciare e gestire business interi da zero — o agentificare completamente un'azienda esistente.</p>
+    <p class="vb reveal d2" style="margin-top:-6px;">Stiamo reclutando <strong>le menti più brillanti d'Italia e d'Europa</strong> e siamo intenzionati a costruire un'intelligenza proprietaria interna. <strong>Questa non è un'impresa ordinaria.</strong></p>
+    <div class="layers reveal d3">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;">// Stack della Piattaforma AIS</div>
+      <div class="layer"><div class="ln">L1</div><div><div class="lname">AI Solutions — Agenti & Automazioni</div><div class="ldesc">Core attuale. In produzione su clienti reali.</div></div><div class="lst live">LIVE</div></div>
+      <div class="layer"><div class="ln">L2</div><div><div class="lname">Integration Engine</div><div class="ldesc">Connessione con qualsiasi stack tecnologico esistente.</div></div><div class="lst build">IN SVILUPPO</div></div>
+      <div class="layer"><div class="ln">L3</div><div><div class="lname">Agentic Platform — Business dal primo prompt</div><div class="ldesc">OS agentico per imprenditori. 12 mesi.</div></div><div class="lst build">12 MESI</div></div>
+      <div class="layer"><div class="ln">L4</div><div><div class="lname">Intelligenza Proprietaria AIS</div><div class="ldesc">Classificato. In ricerca.</div></div><div class="lst res">RICERCA</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAREERS -->
+<section id="careers" class="s">
+  <div class="w" style="padding-top:100px;padding-bottom:100px;">
+    <div class="career-header reveal">
+      <div class="ey">// Lavora con Noi</div>
+      <h2 class="h2">Costruisci<br>il futuro<br><span class="c">con noi.</span></h2>
+      <p class="bt" style="margin-top:16px;max-width:480px;">Non cerchiamo dipendenti. Cerchiamo <strong>persone con la fame di costruire qualcosa di enorme</strong>. Se vuoi dimostrare qualcosa — ti aspettiamo.</p>
+    </div>
+    <div class="rtabs">
+      <button class="rtab on" onclick="sRole('dev',this)">⟨⟩ Sviluppo & AI</button>
+      <button class="rtab" onclick="sRole('comm',this)">◈ Commerciale</button>
+      <button class="rtab" onclick="sRole('sec',this)">⬡ Sicurezza & Infra</button>
+    </div>
+
+    <!-- DEV -->
+    <div id="rp-dev" class="rpanel on">
+      <div class="rhead">
+        <div>
+          <div class="rbig">AI & Software Engineers</div>
+          <p class="rp">Stiamo costruendo una piattaforma che non esiste ancora. Servono <strong>sviluppatori AI, ML Engineers e specialisti LLM</strong> che vogliono risolvere problemi impossibili. Non ci interessa il CV — ci interessa <strong>come pensi.</strong> Per questo esiste la sfida.</p>
+        </div>
+        <div class="rbadge"><div class="rbadge-l">Selezione</div><div class="rbadge-v">La Sfida</div></div>
+      </div>
+      <div class="reqs">
+        <div class="req"><div class="req-t">🤖 AI / LLM Engineering</div><div class="req-d">Esperienza con modelli linguistici, RAG, fine-tuning, agent frameworks.</div></div>
+        <div class="req"><div class="req-t">⚙️ Software Engineering</div><div class="req-d">Backend solido, architetture scalabili. Conta la qualità del pensiero.</div></div>
+        <div class="req"><div class="req-t">🔌 Integrations & Automation</div><div class="req-d">Sistemi che si connettono a qualsiasi stack. Make, n8n, API custom.</div></div>
+        <div class="req"><div class="req-t">🧪 Problem Solver</div><div class="req-d">La challenge è progettata per vedere come ragioni. Se la passi, sei dentro.</div></div>
+      </div>
+      <div class="pbox">
+        <div class="pbox-t">COME FUNZIONA</div>
+        <div class="psteps">
+          <div class="pstep"><div class="psn">1</div><div class="pst">Candidatura</div><div class="psd">Accedi al link e compila il form. Niente CV — vuoi il tuo ragionamento.</div></div>
+          <div class="pstep"><div class="psn">2</div><div class="pst">La Sfida</div><div class="psd">Un problema reale. Progettato per separare chi sa da chi dice di sapere.</div></div>
+          <div class="pstep"><div class="psn">3</div><div class="pst">Colloquio</div><div class="psd">Deep dive sul tuo approccio. Nessuna domanda da manuale.</div></div>
+          <div class="pstep"><div class="psn">4</div><div class="pst">Offerta</div><div class="psd">In 48 ore. Veloce e trasparente.</div></div>
+        </div>
+      </div>
+      <div class="cnote" style="margin-bottom:24px;"><strong>⚠️ SFIDA TECNICA:</strong> Volutamente difficile. Se la passi, l'offerta arriva in 48 ore — nessun round infinito di colloqui.</div>
+      <a href="https://ai-solutions-bit.github.io/Candidatura-Software-Engineers/" target="_blank" class="bp">Affronta la Sfida →</a>
+    </div>
+
+    <!-- COMMERCIAL -->
+    <div id="rp-comm" class="rpanel">
+      <div class="rhead">
+        <div>
+          <div class="rbig">Commerciale & Network</div>
+          <p class="rp">Non cerchiamo venditori a freddo. Cerchiamo <strong>costruttori di network strategici</strong>: persone capaci di instaurare partnership con commercialisti, avvocati e agenzie che lavorano ogni giorno con imprenditori. Chi porta il network <strong>costruisce qualcosa di più grande.</strong></p>
+        </div>
+        <div class="rbadge"><div class="rbadge-l">Filosofia</div><div class="rbadge-v">Network First</div></div>
+      </div>
+      <div class="reqs">
+        <div class="req"><div class="req-t">🤝 Partnership Builder</div><div class="req-d">Relazioni con professionisti che lavorano con PMI e imprenditori.</div></div>
+        <div class="req"><div class="req-t">🎯 Mentalità 10X</div><div class="req-d">Ragioni per obiettivi, non per ore. Non ti accontenti del minimo.</div></div>
+        <div class="req"><div class="req-t">📡 Comunicazione Eccellente</div><div class="req-d">Spieghi concetti complessi in modo semplice. Ascolti prima di parlare.</div></div>
+        <div class="req"><div class="req-t">💡 Visione Strategica</div><div class="req-d">Un canale da 10 lead al mese vale 10 volte più di una singola vendita.</div></div>
+      </div>
+      <div class="pbox">
+        <div class="pbox-t">COME FUNZIONA</div>
+        <div class="psteps">
+          <div class="pstep"><div class="psn">1</div><div class="pst">Candidatura</div><div class="psd">Accedi al link. Raccontaci chi sei e cosa vuoi costruire.</div></div>
+          <div class="pstep"><div class="psn">2</div><div class="pst">Valutazione</div><div class="psd">Cerchiamo mentalità, non solo esperienza commerciale.</div></div>
+          <div class="pstep"><div class="psn">3</div><div class="pst">Call Strategica</div><div class="psd">Parliamo del tuo network e di come crescere insieme.</div></div>
+          <div class="pstep"><div class="psn">4</div><div class="pst">Onboarding</div><div class="psd">Tutto ciò di cui hai bisogno per partire forte.</div></div>
+        </div>
+      </div>
+      <div style="margin-top:24px;"><a href="https://ais-build.github.io/candidature-commerciale/" target="_blank" class="bp">Candidati come Commerciale →</a></div>
+    </div>
+
+    <!-- SECURITY -->
+    <div id="rp-sec" class="rpanel">
+      <div class="rhead">
+        <div>
+          <div class="rbig">Sicurezza & Infrastruttura</div>
+          <p class="rp">Costruiamo infrastrutture AI che gestiranno dati sensibili di aziende reali. Cerchiamo <strong>esperti di sicurezza, DevOps e ingegneri infrastrutturali</strong>. Non ci interessa il CV — ci interessa <strong>come pensi sotto pressione.</strong></p>
+        </div>
+        <div class="rbadge"><div class="rbadge-l">Priorità</div><div class="rbadge-v">CRITICA</div></div>
+      </div>
+      <div class="reqs">
+        <div class="req"><div class="req-t">🔐 Cybersecurity & Data</div><div class="req-d">Sicurezza applicativa, penetration testing, protezione dati, threat modeling AI.</div></div>
+        <div class="req"><div class="req-t">☁️ Cloud & DevOps</div><div class="req-d">Infrastrutture cloud scalabili, container orchestration, CI/CD.</div></div>
+        <div class="req"><div class="req-t">🛡️ AI Security</div><div class="req-d">Vulnerabilità specifiche dei sistemi LLM. Dominio in costruzione.</div></div>
+        <div class="req"><div class="req-t">📐 Architettura Resiliente</div><div class="req-d">Sistemi che non si rompono sotto pressione. I clienti dipendono da noi.</div></div>
+      </div>
+      <div class="pbox">
+        <div class="pbox-t">COME FUNZIONA</div>
+        <div class="psteps">
+          <div class="pstep"><div class="psn">1</div><div class="pst">Candidatura</div><div class="psd">Accedi al link. Niente CV — vuoi il tuo ragionamento.</div></div>
+          <div class="pstep"><div class="psn">2</div><div class="pst">La Sfida</div><div class="psd">Scenario di sicurezza reale su infrastruttura AI.</div></div>
+          <div class="pstep"><div class="psn">3</div><div class="pst">Review Tecnica</div><div class="psd">Conversazione reale su problemi reali.</div></div>
+          <div class="pstep"><div class="psn">4</div><div class="pst">Offerta</div><div class="psd">Veloce. Con spazio per negoziare.</div></div>
+        </div>
+      </div>
+      <div style="margin-top:24px;"><a href="https://ai-solutions-bit.github.io/Candidatura-Software-Engineers/" target="_blank" class="bp">Affronta la Sfida →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section id="benefits" class="s">
+  <div class="w" style="padding-top:100px;padding-bottom:100px;">
+    <div class="reveal">
+      <div class="ey">// Cosa Offriamo</div>
+      <h2 class="h2">Non è<br>un lavoro.<br><span class="c">È un progetto.</span></h2>
+    </div>
+    <div class="bgrid">
+      <div class="bc reveal d1"><div class="bc-ico">💻</div><div class="bc-t">Setup Premium</div><div class="bc-d">Hardware top, accesso a tutti i tool AI.</div></div>
+      <div class="bc reveal d2"><div class="bc-ico">🍽️</div><div class="bc-t">Pasti & Area Relax</div><div class="bc-d">Pranzo, colazione e spazio dedicato al recupero.</div></div>
+      <div class="bc reveal d3"><div class="bc-ico">💰</div><div class="bc-t">Bonus Performance</div><div class="bc-d">Legati ai risultati. AIS cresce, cresci tu.</div></div>
+      <div class="bc reveal d1"><div class="bc-ico">🚀</div><div class="bc-t">Equity per Figure Chiave</div><div class="bc-d">Co-costruire significa co-raccogliere i frutti.</div></div>
+      <div class="bc reveal d2"><div class="bc-ico">🌍</div><div class="bc-t">Navigli + USA</div><div class="bc-d">Milano, Navigli. Presenza diretta su Chicago e USA.</div></div>
+      <div class="bc reveal d3"><div class="bc-ico">⚡</div><div class="bc-t">Zero Burocrazia</div><div class="bc-d">Decidi, esegui, misura. La velocità è cultura.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="fcta" class="s">
+  <h2 class="fh reveal">Non aspettare<br><span class="c">il futuro.</span><br>Costruiscilo.</h2>
+  <p class="fs reveal d1">10 slot disponibili al mese. Poche aziende selezionate. Il momento è adesso.</p>
+  <div class="fb reveal d2">
+    <a href="https://ais-build.github.io/candidatura/" target="_blank" class="bp">Candidati al Progetto 90%</a>
+    <a href="https://ai-solutions-bit.github.io/Candidatura-Software-Engineers/" target="_blank" class="bs">Candidati come Developer</a>
+    <a href="https://ais-build.github.io/candidature-commerciale/" target="_blank" class="bs">Candidati come Commerciale</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft">
+    <div>
+      <div class="flogo">A<em>I</em>S</div>
+      <div class="ftag">Agenti, automazioni e infrastrutture AI su misura per imprenditori che vogliono risultati reali — non promesse.</div>
+    </div>
+    <div>
+      <div class="fct">Navigazione</div>
+      <ul class="fl">
+        <li><a href="#about">Chi Siamo</a></li>
+        <li><a href="#p90">Progetto 90%</a></li>
+        <li><a href="#vision">Vision</a></li>
+        <li><a href="#careers">Careers</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="fct">Candidature</div>
+      <ul class="fl">
+        <li><a href="https://ais-build.github.io/candidatura/" target="_blank">Aziende →</a></li>
+        <li><a href="https://ai-solutions-bit.github.io/Candidatura-Software-Engineers/" target="_blank">Developer & AI →</a></li>
+        <li><a href="https://ai-solutions-bit.github.io/Candidatura-Software-Engineers/" target="_blank">Sicurezza & Infra →</a></li>
+        <li><a href="https://ais-build.github.io/candidature-commerciale/" target="_blank">Commerciale →</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="fbot">
+    <div class="fleg">© 2025 AIS — Artificial Intelligence Solutions. Tutti i diritti riservati.</div>
+    <div class="fco">Navigli, Milano · Wyoming & Chicago, USA</div>
+  </div>
+</footer>
+
+<script>
+// REVEAL — directional
+const revealAll = document.querySelectorAll('.reveal,.reveal-l,.reveal-r');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);} });
+},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
+revealAll.forEach(el=>obs.observe(el));
+
+// ROLE TABS
+function sRole(r,btn){
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.rpanel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('rp-'+r).classList.add('on');
+}
+
+// SLOTS
+setTimeout(()=>{
+  let n=10;const el=document.getElementById('slotNum');
+  const iv=setInterval(()=>{n--;el.textContent=n;if(n<=7)clearInterval(iv);},350);
+},1800);
+
+// SMOOTH SCROLL
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+
+// NAV
+const nl=document.querySelectorAll('.nav-l a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  document.querySelectorAll('section[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-110)cur=s.id;});
+  nl.forEach(l=>{l.style.color=l.getAttribute('href')==='#'+cur?'var(--cyan)':'';});
+});
+</script>
+</body>
+</html>
